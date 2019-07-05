@@ -33,6 +33,44 @@ describe('Validator#validate', () => {
     assert.equal(errors[0].message, "Validation Error: parameter 'name' is waiting for a 'string' argument but received a 'number'")
   })
 
+  it('should append all errors in the same structure', () => {
+    let data = {
+      a: 35,
+      b: 35,
+      c: 35
+    }
+
+    let rules = {
+      a: "string",
+      b: "string",
+      c: "string"
+    }
+
+    let errors = validator.validate(rules, data)
+    assert.equal(errors.length, 3)
+    assert.equal(errors[0].param, 'a')
+    assert.equal(errors[1].param, 'b')
+    assert.equal(errors[2].param, 'c')
+  })
+
+  it('should append all errors in the same structure when not in rules', () => {
+    let data = {
+      a: 'menganito',
+      b: 'juanito',
+      c: 'jaimito'
+    }
+
+    let rules = {
+      b: "string",
+    }
+
+    let errors = validator.validate(rules, data)
+    assert.equal(errors.length, 2)
+    assert.equal(errors[0].param, 'a')
+    assert.equal(errors[1].param, 'c')
+  })
+
+
   it('should validate on simple structure with unknown fields', () => {
     let data = {
       name: "pepito",

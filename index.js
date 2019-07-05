@@ -72,8 +72,7 @@ class Validator
     }
 
     if (rules && rules['*'] === undefined) {
-      let missingField = Object.keys(copy)[0]
-      if (missingField !== undefined) {
+      for (let missingField in copy) {
         errors.push(new ValidationException(
             fieldPreffix + missingField,
             `Validation Error: parameter '${fieldPreffix + missingField}' found but was not expected`
