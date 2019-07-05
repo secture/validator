@@ -1,20 +1,6 @@
 
-class NotImplementedException extends Error
-{
-  constructor () {
-    super()
-    this.message = 'Not implemented yet!'
-  }
-}
+const { NotImplementedException, ValidationException } = require('./lib/exceptions')
 
-
-class ValidationException
-{
-  constructor (param, message) {
-    this.param = param
-    this.message = message
-  }
-}
 
 class Validator
 {
@@ -46,15 +32,23 @@ class Validator
   /**
    * Returns an object with errors or null if nothing fails.
    */
-  static validate (rules, object, fieldPreffix) {
+  static validate (rules, original, fieldPreffix) {
 
     if (! fieldPreffix) {
       fieldPreffix = ''
     }
 
-    let copy = Object.assign({}, object)
+    if (fieldPreffix !== '') {
+      fieldPreffix += '.'
+    }
 
-    let errors = []
+    if (rules === undefined) {
+      throw new Error(`Parameter rules cannot be undefined`)
+    }
+
+    const copy = Object.assign({}, original)
+
+    const errors = []
 
     for (let i in rules) {
       // special field
@@ -63,33 +57,50 @@ class Validator
       }
 
       let rule = rules[i]
-      let value = object[i]
+      let value = copy[i]
 
-      if (typeof rule === 'string') {
-        let fieldErrors = this._validateField(rule, value, fieldPreffix + i)
-        for (let j in fieldErrors) {
-          errors.push(fieldErrors[j])
-        }
-      } else {
+      let type = typeof rule
+
+      let fieldErrors = []
+
+      switch (type) {
+      case 'string':
+        fieldErrors = this._validateField(rule, value, fieldPreffix + i)
+        break;
+      case 'object':
+        fieldErrors = this.validate(rule, value, fieldPreffix + i)
+        break;
+      default:
         throw new NotImplementedException()
+        break;
+      }
+
+      for (let j in fieldErrors) {
+        errors.push(fieldErrors[j])
       }
 
       delete copy[i]
     }
 
-    if (rules['*'] === undefined) {
+    if (! rules) {
+      let missingField = Object.keys(copy)[0]
+      errors.push(new ValidationException(
+        fieldPreffix + missingField,
+        `Validation Error: parameter '${fieldPreffix + missingField}' found but was not expected`
+      ))
+    }
+
+    if (rules && rules['*'] === undefined) {
       let missingField = Object.keys(copy)[0]
       if (missingField !== undefined) {
         errors.push(new ValidationException(
-          missingField,
-          `Validation Error: parameter '${missingField}' found but was not expected`
+          fieldPreffix + missingField,
+          `Validation Error: parameter '${fieldPreffix + missingField}' found but was not expected`
         ))
       }
     }
 
-    if (errors.length === 0) {
-      errors = null
-    }
+    // console.groupEnd()
 
     return errors
   }

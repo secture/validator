@@ -14,9 +14,10 @@ describe('Validator#validate', () => {
       name: "string"
     }
 
-    let error = Validator.validate(rules, data)
+    let errors = Validator.validate(rules, data)
 
-    assert.equal(error, null)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
   })
   it('should not validate on simple wrong structure', () => {
     let data = {
@@ -45,7 +46,8 @@ describe('Validator#validate', () => {
 
     let errors = Validator.validate(rules, data)
 
-    assert.equal(errors, null)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
   })
   it('should not validate when passing something not expected', () => {
     let data = {
@@ -63,11 +65,40 @@ describe('Validator#validate', () => {
     assert.equal(errors[0].param, 'unexpected')
     assert.equal(errors[0].message, "Validation Error: parameter 'unexpected' found but was not expected")
   })
+
   it('should be recursive with objects', () => {
+    let data = {
+      level1: {
+        level2: {
+          level3: "something"
+        }
+      }
+    }
+
+    let rules = {
+      level1: {
+        level2: {
+          level3: "string"
+        }
+      }
+    }
+
+    let errors = Validator.validate(rules, data)
+
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+  })
+  it('should be super recursive with objects', () => {
     let data = {
       a: {
         b: {
-          c: "something"
+          c: {
+            d: {
+              e: {
+                f: 'something'
+              }
+            }
+          }
         }
       }
     }
@@ -75,14 +106,21 @@ describe('Validator#validate', () => {
     let rules = {
       a: {
         b: {
-          c: "string"
+          c: {
+            d: {
+              e: {
+                f: 'string'
+              }
+            }
+          }
         }
       }
     }
 
     let errors = Validator.validate(rules, data)
 
-    assert.equal(errors, null)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
   })
   it('should be recursive with objects and fail if there are errors', () => {
     let data = {
@@ -103,7 +141,40 @@ describe('Validator#validate', () => {
 
     let errors = Validator.validate(rules, data)
 
-    assert.equal(errors, null)
+    assert.equal(errors.length, 1)
+    assert.equal(errors[0].param, 'a.b.c')
+    // @todo pablo - validate message for the error
+  })
+
+  it('should be recursive with objects and fail if the structure does not match', () => {
+    let data = {
+      a: {
+        b: {
+          c: 'pepito'
+        }
+      }
+    }
+
+    let rules = {
+      a: {
+        x: {
+          c: 'string'
+        }
+      }
+    }
+
+    let errors = Validator.validate(rules, data)
+    // a.b.c is not expected
+    // a.x.c is not defined
+
+    let expectedMessages = [
+      "Validation Error: parameter 'a.x.c' is a required field",
+      "Validation Error: parameter 'a.b' found but was not expected",
+    ]
+    assert.equal(errors.length, 2)
+    assert.equal(errors[0].message, expectedMessages[0])
+    assert.equal(errors[1].message, expectedMessages[1])
+
   })
 
   it.skip('should validate a complex object', () => {
@@ -152,9 +223,12 @@ describe('Validator#validate', () => {
       stats: rulesStats,
     }
 
-    let error = Validator.validate(rules, data)
+    let errors = Validator.validate(rules, data)
 
-    assert.equal(error, null)
+    console.log(errors)
+
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
   })
 
 })
