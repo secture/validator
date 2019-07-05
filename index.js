@@ -16,18 +16,21 @@ class Validator
 
     let errors = []
 
-    if (rule === '*') {
-      return errors
-    }
-
-    if (typeof value === 'undefined') {
+    if (this._getTypeFor(value) === 'undefined') {
       errors.push(new ValidationException(parameterName, `Validation Error: parameter '${parameterName}' is a required field`))
     } else {
-      if (typeof value !== rule) {
-        errors.push(new ValidationException(
-          parameterName,
-          `Validation Error: parameter '${parameterName}' is waiting for a '${rule}' argument but received a '${typeof value}'`
-        ))
+      if (this._getTypeFor(value) !== rule) {
+        if (! parameterName) {
+          errors.push(new ValidationException(
+            '',
+            `Validation Error: the default parameter is waiting for a '${rule}' argument but received a '${this._getTypeFor(value)}'`
+          ))
+        } else {
+          errors.push(new ValidationException(
+            parameterName,
+            `Validation Error: parameter '${parameterName}' is waiting for a '${rule}' argument but received a '${this._getTypeFor(value)}'`
+          ))
+        }
       }
     }
 
@@ -91,6 +94,23 @@ class Validator
     return errors
   }
 
+  _getTypeFor(value) {
+
+    if (typeof value !== 'object') {
+      return typeof value
+    }
+
+    if (Array.isArray(value)) {
+      return 'array'
+    }
+
+    if (value === null) {
+      return 'null'
+    }
+
+    return 'object'
+  }
+
   /**
    * Returns an object with errors or [] if nothing fails.
    */
@@ -105,18 +125,17 @@ class Validator
     // special field
     if (rules !== '*') {
 
-      let type = typeof rules
+      let type = this._getTypeFor(rules)
 
       switch (type) {
       case 'string':
         errors = errors.concat(this._validateField(rules, original, fieldPreffix))
         break;
-      case 'object': // and array
-        if (Array.isArray(rules)) {
-          errors = errors.concat(this._validateArray(rules, original, fieldPreffix))
-        } else {
-          errors = errors.concat(this._validateObject(rules, original, fieldPreffix))
-        }
+      case 'object':
+        errors = errors.concat(this._validateObject(rules, original, fieldPreffix))
+        break;
+      case 'array':
+        errors = errors.concat(this._validateArray(rules, original, fieldPreffix))
         break;
       default:
         throw new NotImplementedException()

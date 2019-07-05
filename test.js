@@ -213,13 +213,110 @@ describe('Validator#validate', () => {
     assert.equal(errors[0].param, 'a.1')
   })
 
-  it('should validate simple objects', () => {
+  it('should validate simple data', () => {
     let data = 'something expected'
     let rules = 'string'
 
     let errors = validator.validate(rules, data)
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
+  })
+  it('should validate simple data and fail', () => {
+    let data = []
+    let rules = 'string'
+
+    let errors = validator.validate(rules, data)
+    assert.equal(Array.isArray(errors), true)
+    let expectedMessages = [
+      "Validation Error: the default parameter is waiting for a 'string' argument but received a 'array'",
+    ]
+    assert.equal(errors.length, 1)
+    assert.equal(errors[0].param, '') // default === ''
+    assert.equal(errors[0].message, expectedMessages[0])
+  })
+  it('should validate simple arrays', () => {
+    let data = [ 'something', 'is', 'expected' ]
+    let rules = [ 'string' ]
+
+    let errors = validator.validate(rules, data)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+  })
+  it('should validate simple arrays and fail', () => {
+    let data = [ 'something', null, 'expected' ]
+    let rules = [ 'string' ]
+
+    let errors = validator.validate(rules, data)
+    let expectedMessages = [
+      "Validation Error: parameter '1' is waiting for a 'string' argument but received a 'null'",
+    ]
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 1)
+    assert.equal(errors[0].param, '1') // default === ''
+    assert.equal(errors[0].message, expectedMessages[0])
+  })
+  it('should raise its hand if a wrong array config is provided', () => {
+    let data = [ 'something', 'not', 'expected' ]
+    let rules = [ 'string', 'object' ]
+
+    try {
+      let errors = validator.validate(rules, data)
+      assert.fail()
+    }
+    catch (e) {
+      if (e.name !== 'Error') {
+        throw e
+      }
+
+      assert.equal(e.name, 'Error')
+      assert.equal(e.message, 'Invalid rule ["string","object"] in ')
+    }
+  })
+
+
+  it('should validate simple wildcard', () => {
+    let data = 'something expected'
+    let rules = '*'
+
+    let errors = validator.validate(rules, data)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+  })
+
+
+  it('should fail if no params are sent to validator', () => {
+    try {
+      let errors = validator.validate()
+      assert.fail()
+    }
+    catch (e) {
+      if (e.name !== 'Error') {
+        throw e
+      }
+
+      assert.equal(e.name, 'Error')
+      assert.equal(e.message, 'Parameter rules cannot be undefined')
+    }
+  })
+
+  it('should validate nulls', () => {
+    let data = null
+    let rules = 'null'
+
+    let errors = validator.validate(rules, data)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+  })
+
+  it('should validate nulls and fail', () => {
+    let data = 35
+    let rules = 'null'
+
+    let errors = validator.validate(rules, data)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 1)
+    assert.equal(errors[0].param, '') // default
+    assert.equal(errors[0].message, "Validation Error: the default parameter is waiting for a 'null' argument but received a 'number'")
   })
 
   it.skip('should validate a complex object', () => {
@@ -272,7 +369,6 @@ describe('Validator#validate', () => {
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
   })
-
 })
 
 
