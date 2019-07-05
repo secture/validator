@@ -44,7 +44,7 @@ class Validator
     let errors = []
 
     if (rules.length !== 1) {
-      throw new Error(`Invalid rule ${JSON.stringify(rules)} in ${fieldPreffix}`)
+      throw new InvalidRulesException(`Invalid rule ${JSON.stringify(rules)} in ${fieldPreffix}`)
     }
 
     for (let j in value) {
@@ -107,7 +107,7 @@ class Validator
   validate (rules, original, fieldPreffix) {
 
     if (rules === undefined) {
-      throw new Error(`Parameter rules cannot be undefined`)
+      throw new InvalidRulesException(`Parameter rules cannot be undefined`)
     }
 
     let errors = []

@@ -268,7 +268,7 @@ describe('Validator#validate', () => {
       }
 
       assert.equal(e.name, 'Error')
-      assert.equal(e.message, 'Invalid rule ["string","object"] in ')
+      assert.equal(e.message, 'InvalidRulesException: Invalid rule ["string","object"] in ')
     }
   })
 
@@ -294,7 +294,7 @@ describe('Validator#validate', () => {
       }
 
       assert.equal(e.name, 'Error')
-      assert.equal(e.message, 'Parameter rules cannot be undefined')
+      assert.equal(e.message, 'InvalidRulesException: Parameter rules cannot be undefined')
     }
   })
 
@@ -327,7 +327,7 @@ describe('Validator#validate', () => {
       if (e.name !== 'Error') {
         throw e
       }
-      assert.equal(e.message, 'Unknown type of rule: null')
+      assert.equal(e.message, 'InvalidRulesException: Unknown type of rule: null')
     }
   })
 
