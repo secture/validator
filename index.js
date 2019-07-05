@@ -1,61 +1,78 @@
 
-var ValidationException = function (param, message) {
-  this.param = param;
-  this.message = message;
-};
+let ValidationException = function (param, message) {
+  this.param = param
+  this.message = message
+}
 
-module.exports = function (requirements, object) {
-  var copy = Object.assign({}, object);
+class Validator
+{
+  /**
+   * Returns an object with errors or null if nothing fails.
+   */
+  static validate (rules, object) {
 
-  for (var i in requirements) {
-    // special field
-    if (i === '*') {
-      continue;
-    }
+    let copy = Object.assign({}, object)
 
-    var requirement = requirements[i];
-    var property = object[i];
+    let errors = []
 
-    var defaultValue = null;
-
-    var isRequired = true;
-    if (typeof requirement === 'object') {
-      isRequired = false;
-      defaultValue = requirement[1];
-      requirement = requirement[0];
-    }
-
-    if (typeof property === 'undefined') {
-      if (isRequired) {
-        throw new ValidationException(
-          i,
-          `Validation Error: parameter '${i}' is a required field`
-        );
+    for (let i in rules) {
+      // special field
+      if (i === '*') {
+        continue
       }
 
-      object[i] = defaultValue;
+      let requirement = rules[i]
+      let property = object[i]
 
-    } else {
-      if (typeof property !== requirement) {
-        throw new ValidationException(
-          i,
-          `Validation Error: parameter '${i}' is waiting for a '${requirement}' argument but received a '${typeof property}'`
-        );
+      let defaultValue = null
+
+      let isRequired = true
+      if (typeof requirement === 'object') {
+        isRequired = false
+        defaultValue = requirement[1]
+        requirement = requirement[0]
+      }
+
+      if (typeof property === 'undefined') {
+        if (isRequired) {
+          errors.push([ i, `Validation Error: parameter '${i}' is a required field` ])
+        }
+
+        object[i] = defaultValue
+
+      } else {
+        if (typeof property !== requirement) {
+          errors.push([
+            i,
+            `Validation Error: parameter '${i}' is waiting for a '${requirement}' argument but received a '${typeof property}'`
+          ])
+        }
+      }
+
+      delete copy[i]
+    }
+
+    if (rules['*'] === undefined) {
+      let missingField = Object.keys(copy)[0]
+      if (missingField !== undefined) {
+        errors.push([
+          missingField,
+          `Validation Error: parameter '${missingField}' found but was not expected`
+        ])
       }
     }
 
-    delete copy[i];
-  }
-
-  if (typeof requirements['*'] === undefined) {
-    var missingField = Object.keys(copy)[0];
-    if (missingField !== undefined) {
-      throw new ValidationException(
-        missingField,
-        `Validation Error: parameter '${missingField}' found but was not expected`
-      );
+    if (errors.length === 0) {
+      errors = null
     }
+
+    return errors
   }
 
-  return object;
-};
+  static sanitize (rules, data) {
+    throw new Error('not implemented yet')
+  }
+}
+
+module.exports = Validator
+
