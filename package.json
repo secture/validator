@@ -6,11 +6,13 @@
   "scripts": {
     "test": "mocha",
     "test:unit": "mocha",
-    "test:unit:watch": "mocha --watch"
+    "test:unit:watch": "mocha --watch",
+    "test:unit:coverage": "nyc --reporter html mocha && open coverage/index.html"
   },
   "author": "Pablo López Torres <pablo@secture.com>",
   "license": "ISC",
   "devDependencies": {
-    "mocha": "^6.1.4"
+    "mocha": "^6.1.4",
+    "nyc": "^14.1.1"
   }
 }
