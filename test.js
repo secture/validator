@@ -331,6 +331,70 @@ describe('Validator#validate', () => {
     }
   })
 
+  it('should validate a complex object with no types', () => {
+
+    let data = {
+      'name': 'registered-contact',
+      'data': {
+        'contactId': '000000000011111111112222',
+        'name': 'Pablo',
+        'surname': 'López',
+        'phone': '+34637412012',
+        'location': 'Las Rozas, Madrid',
+        'isDependant': false,
+        'registeredAt': '2019-09-18 12:30:00',
+      },
+      'stats': {
+        'createdAt': '2019-09-21 10:00:00',
+        'startedAt': '',
+        'endedAt': '',
+        'assigneeId': '999999999988888888887777',
+      },
+      'executions': [
+        { 'name': 'executed-1', 'id': 31 },
+        { 'name': 'executed-2', 'id': 32 },
+        { 'name': 'executed-3', 'id': 33 },
+        { 'name': 'executed-4', 'id': 34 },
+        { 'name': 'executed-5', 'id': 35 },
+        { 'name': 'executed-6', 'id': 36 },
+      ]
+    }
+
+    let rulesName = 'string'
+
+    let rulesData = {
+      contactId: 'string',
+      name: 'string',
+      surname: 'string',
+      phone: 'string',
+      location: 'string',
+      isDependant: 'boolean',
+      registeredAt: 'string',
+    }
+
+    let rulesStats = {
+      createdAt: 'string',
+      startedAt: 'string',
+      endedAt: 'string',
+      assigneeId: 'string',
+    }
+
+    let rulesExecutions = [
+      { name: 'string', id: 'number' }
+    ]
+
+    let rules = {
+      name: rulesName,
+      data: rulesData,
+      stats: rulesStats,
+      executions: rulesExecutions,
+    }
+
+    let errors = validator.validate(rules, data)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+  })
+
   it.skip('should validate a complex object', () => {
 
     let data = {

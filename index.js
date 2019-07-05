@@ -48,7 +48,7 @@ class Validator
     }
 
     for (let j in value) {
-      errors = errors.concat(this._validateField(rules[0], value[j], fieldPreffix + j))
+      errors = errors.concat(this.validate(rules[0], value[j], fieldPreffix + j))
     }
 
     return errors
