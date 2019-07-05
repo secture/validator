@@ -1,0 +1,16 @@
+{
+  "name": "schema-validator",
+  "version": "1.0.0",
+  "description": "A schema validator for JSON objects",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "test:unit": "mocha",
+    "test:unit:watch": "mocha --watch"
+  },
+  "author": "Pablo López Torres <pablo@secture.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "mocha": "^6.1.4"
+  }
+}
