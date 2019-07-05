@@ -5,10 +5,6 @@ const Validator = require('./index')
 
 describe('Validator#validate', () => {
 
-  it('should return true', () => {
-    assert.equal(true, true)
-  })
-
   it('should validate on simple structure', () => {
     let data = {
       name: "pablo"
@@ -22,7 +18,6 @@ describe('Validator#validate', () => {
 
     assert.equal(error, null)
   })
-
   it('should not validate on simple wrong structure', () => {
     let data = {
       name: 35
@@ -38,7 +33,6 @@ describe('Validator#validate', () => {
     assert.equal(errors[0].param, 'name')
     assert.equal(errors[0].message, "Validation Error: parameter 'name' is waiting for a 'string' argument but received a 'number'")
   })
-
   it('should validate on simple structure with unknown fields', () => {
     let data = {
       name: "pepito",
@@ -53,7 +47,6 @@ describe('Validator#validate', () => {
 
     assert.equal(errors, null)
   })
-
   it('should not validate when passing something not expected', () => {
     let data = {
       name: "pablo",
@@ -70,7 +63,6 @@ describe('Validator#validate', () => {
     assert.equal(errors[0].param, 'unexpected')
     assert.equal(errors[0].message, "Validation Error: parameter 'unexpected' found but was not expected")
   })
-
   it('should be recursive with objects', () => {
     let data = {
       a: {
@@ -92,7 +84,27 @@ describe('Validator#validate', () => {
 
     assert.equal(errors, null)
   })
+  it('should be recursive with objects and fail if there are errors', () => {
+    let data = {
+      a: {
+        b: {
+          c: 35
+        }
+      }
+    }
 
+    let rules = {
+      a: {
+        b: {
+          c: "string"
+        }
+      }
+    }
+
+    let errors = Validator.validate(rules, data)
+
+    assert.equal(errors, null)
+  })
 
   it.skip('should validate a complex object', () => {
 
