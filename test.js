@@ -35,8 +35,23 @@ describe('Validator#validate', () => {
     let errors = Validator.validate(rules, data)
 
     assert.equal(errors.length, 1)
-    assert.equal(errors[0][0], 'name')
-    assert.equal(errors[0][1], "Validation Error: parameter 'name' is waiting for a 'string' argument but received a 'number'")
+    assert.equal(errors[0].param, 'name')
+    assert.equal(errors[0].message, "Validation Error: parameter 'name' is waiting for a 'string' argument but received a 'number'")
+  })
+
+  it('should validate on simple structure with unknown fields', () => {
+    let data = {
+      name: "pepito",
+      somethin: 'maybe expected'
+    }
+    let rules = {
+      name: 'string',
+      '*': '*'
+    }
+
+    let errors = Validator.validate(rules, data)
+
+    assert.equal(errors, null)
   })
 
   it('should not validate when passing something not expected', () => {
@@ -52,9 +67,32 @@ describe('Validator#validate', () => {
     let errors = Validator.validate(rules, data)
 
     assert.equal(errors.length, 1)
-    assert.equal(errors[0][0], 'unexpected')
-    assert.equal(errors[0][1], "Validation Error: parameter 'unexpected' found but was not expected")
+    assert.equal(errors[0].param, 'unexpected')
+    assert.equal(errors[0].message, "Validation Error: parameter 'unexpected' found but was not expected")
   })
+
+  it('should be recursive with objects', () => {
+    let data = {
+      a: {
+        b: {
+          c: "something"
+        }
+      }
+    }
+
+    let rules = {
+      a: {
+        b: {
+          c: "string"
+        }
+      }
+    }
+
+    let errors = Validator.validate(rules, data)
+
+    assert.equal(errors, null)
+  })
+
 
   it.skip('should validate a complex object', () => {
 
@@ -78,6 +116,7 @@ describe('Validator#validate', () => {
     }
 
     let rulesName = "string"
+
     let rulesData = {
       contactId: "string",
       name: "string",
@@ -87,6 +126,7 @@ describe('Validator#validate', () => {
       isDependant: "boolean",
       registeredAt: "date",
     }
+
     let rulesStats = {
       createdAt: "date",
       startedAt: "date|null",

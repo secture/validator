@@ -1,15 +1,56 @@
 
-let ValidationException = function (param, message) {
-  this.param = param
-  this.message = message
+class NotImplementedException extends Error
+{
+  constructor () {
+    super()
+    this.message = 'Not implemented yet!'
+  }
+}
+
+
+class ValidationException
+{
+  constructor (param, message) {
+    this.param = param
+    this.message = message
+  }
 }
 
 class Validator
 {
   /**
+   *
+   * @param rule string
+   * @param value mixed
+   */
+  static _validateField(rule, value, parameterName) {
+    const errors = []
+
+    let isRequired = true
+    if (typeof value === 'undefined') {
+      if (isRequired) {
+        errors.push(new ValidationException(parameterName, `Validation Error: parameter '${parameterName}' is a required field`))
+      }
+    } else {
+      if (typeof value !== rule) {
+        errors.push(new ValidationException(
+          parameterName,
+          `Validation Error: parameter '${parameterName}' is waiting for a '${rule}' argument but received a '${typeof value}'`
+        ))
+      }
+    }
+
+    return errors
+  }
+
+  /**
    * Returns an object with errors or null if nothing fails.
    */
-  static validate (rules, object) {
+  static validate (rules, object, fieldPreffix) {
+
+    if (! fieldPreffix) {
+      fieldPreffix = ''
+    }
 
     let copy = Object.assign({}, object)
 
@@ -21,32 +62,16 @@ class Validator
         continue
       }
 
-      let requirement = rules[i]
-      let property = object[i]
+      let rule = rules[i]
+      let value = object[i]
 
-      let defaultValue = null
-
-      let isRequired = true
-      if (typeof requirement === 'object') {
-        isRequired = false
-        defaultValue = requirement[1]
-        requirement = requirement[0]
-      }
-
-      if (typeof property === 'undefined') {
-        if (isRequired) {
-          errors.push([ i, `Validation Error: parameter '${i}' is a required field` ])
+      if (typeof rule === 'string') {
+        let fieldErrors = this._validateField(rule, value, fieldPreffix + i)
+        for (let j in fieldErrors) {
+          errors.push(fieldErrors[j])
         }
-
-        object[i] = defaultValue
-
       } else {
-        if (typeof property !== requirement) {
-          errors.push([
-            i,
-            `Validation Error: parameter '${i}' is waiting for a '${requirement}' argument but received a '${typeof property}'`
-          ])
-        }
+        throw new NotImplementedException()
       }
 
       delete copy[i]
@@ -55,10 +80,10 @@ class Validator
     if (rules['*'] === undefined) {
       let missingField = Object.keys(copy)[0]
       if (missingField !== undefined) {
-        errors.push([
+        errors.push(new ValidationException(
           missingField,
           `Validation Error: parameter '${missingField}' found but was not expected`
-        ])
+        ))
       }
     }
 
@@ -70,7 +95,7 @@ class Validator
   }
 
   static sanitize (rules, data) {
-    throw new Error('not implemented yet')
+    throw new NotImplementedException()
   }
 }
 
