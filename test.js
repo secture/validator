@@ -5,7 +5,6 @@ const Validator = require('./index')
 const validator = new Validator()
 
 describe('Validator#validate', () => {
-
   it('should validate on simple structure', () => {
     let data = {
       name: "pablo"
@@ -319,6 +318,19 @@ describe('Validator#validate', () => {
     assert.equal(errors[0].message, "Validation Error: the default parameter is waiting for a 'null' argument but received a 'number'")
   })
 
+  it('should throw a schema exception if rules contains anything not understandable', () => {
+
+    try {
+      validator.validate(null, 'mystring')
+      assert.fail()
+    } catch (e) {
+      if (e.name !== 'Error') {
+        throw e
+      }
+      assert.equal(e.message, 'Unknown type of rule: null')
+    }
+  })
+
   it.skip('should validate a complex object', () => {
 
     let data = {
@@ -368,6 +380,22 @@ describe('Validator#validate', () => {
     let errors = validator.validate(rules, data)
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
+  })
+})
+
+describe('Validator#sanitize', () => {
+  it('should throw (temporarily) a not implemented exception for now', () => {
+    try {
+      validator.sanitize('string', 'mystring')
+      assert.fail()
+    }
+    catch (e) {
+      if (e.name !== 'Error') {
+        throw e
+      }
+      assert.equal(e.name, 'Error')
+      assert.equal(e.message, 'Not implemented yet!')
+    }
   })
 })
 

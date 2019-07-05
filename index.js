@@ -1,5 +1,5 @@
 
-const { NotImplementedException, ValidationException } = require('./lib/exceptions')
+const { NotImplementedException, InvalidRulesException, ValidationException } = require('./lib/exceptions')
 
 
 class Validator
@@ -10,10 +10,6 @@ class Validator
    * @param value mixed
    */
   _validateField(rule, value, parameterName) {
-    // console.log('_validateField')
-    // console.log(rule, 'rule')
-    // console.log(value, 'value')
-
     let errors = []
 
     if (this._getTypeFor(value) === 'undefined') {
@@ -37,9 +33,6 @@ class Validator
     return errors
   }
   _validateArray(rules, value, fieldPreffix) {
-    // console.log('_validateArray')
-    // console.log(rules, 'rules')
-    // console.log(value, 'value')
 
     if (! fieldPreffix) {
       fieldPreffix = ''
@@ -61,9 +54,6 @@ class Validator
     return errors
   }
   _validateObject(rules, value, fieldPreffix) {
-    // console.log('_validateObject')
-    // console.log(rules, 'rules')
-    // console.log(value, 'value')
 
     if (! fieldPreffix) {
       fieldPreffix = ''
@@ -138,8 +128,7 @@ class Validator
         errors = errors.concat(this._validateArray(rules, original, fieldPreffix))
         break;
       default:
-        throw new NotImplementedException()
-        break;
+        throw new InvalidRulesException(`Unknown type of rule: ${type}`)
       }
     }
 
