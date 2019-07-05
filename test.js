@@ -2,6 +2,7 @@
 const assert = require('assert')
 
 const Validator = require('./index')
+const validator = new Validator()
 
 describe('Validator#validate', () => {
 
@@ -14,8 +15,7 @@ describe('Validator#validate', () => {
       name: "string"
     }
 
-    let errors = Validator.validate(rules, data)
-
+    let errors = validator.validate(rules, data)
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
   })
@@ -28,12 +28,12 @@ describe('Validator#validate', () => {
       name: "string"
     }
 
-    let errors = Validator.validate(rules, data)
-
+    let errors = validator.validate(rules, data)
     assert.equal(errors.length, 1)
     assert.equal(errors[0].param, 'name')
     assert.equal(errors[0].message, "Validation Error: parameter 'name' is waiting for a 'string' argument but received a 'number'")
   })
+
   it('should validate on simple structure with unknown fields', () => {
     let data = {
       name: "pepito",
@@ -44,7 +44,7 @@ describe('Validator#validate', () => {
       '*': '*'
     }
 
-    let errors = Validator.validate(rules, data)
+    let errors = validator.validate(rules, data)
 
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
@@ -59,7 +59,7 @@ describe('Validator#validate', () => {
       name: "string"
     }
 
-    let errors = Validator.validate(rules, data)
+    let errors = validator.validate(rules, data)
 
     assert.equal(errors.length, 1)
     assert.equal(errors[0].param, 'unexpected')
@@ -83,7 +83,7 @@ describe('Validator#validate', () => {
       }
     }
 
-    let errors = Validator.validate(rules, data)
+    let errors = validator.validate(rules, data)
 
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
@@ -117,7 +117,7 @@ describe('Validator#validate', () => {
       }
     }
 
-    let errors = Validator.validate(rules, data)
+    let errors = validator.validate(rules, data)
 
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
@@ -139,13 +139,12 @@ describe('Validator#validate', () => {
       }
     }
 
-    let errors = Validator.validate(rules, data)
+    let errors = validator.validate(rules, data)
 
     assert.equal(errors.length, 1)
     assert.equal(errors[0].param, 'a.b.c')
     // @todo pablo - validate message for the error
   })
-
   it('should be recursive with objects and fail if the structure does not match', () => {
     let data = {
       a: {
@@ -163,7 +162,7 @@ describe('Validator#validate', () => {
       }
     }
 
-    let errors = Validator.validate(rules, data)
+    let errors = validator.validate(rules, data)
     // a.b.c is not expected
     // a.x.c is not defined
 
@@ -175,6 +174,52 @@ describe('Validator#validate', () => {
     assert.equal(errors[0].message, expectedMessages[0])
     assert.equal(errors[1].message, expectedMessages[1])
 
+  })
+
+  it('should validate also array types', () => {
+    let data = {
+      a: [
+        'alpha',
+        'bravo',
+        'charlie',
+        'delta',
+      ]
+    }
+
+    let rules = {
+      a: [ 'string' ]
+    }
+
+    let errors = validator.validate(rules, data)
+    assert.equal(errors.length, 0) 
+  })
+
+  it('should validate also array types and fail if it is wrong', () => {
+    let data = {
+      a: [
+        'alpha',
+        null,
+        'charlie',
+        'delta',
+      ]
+    }
+
+    let rules = {
+      a: [ 'string' ]
+    }
+
+    let errors = validator.validate(rules, data)
+    assert.equal(errors.length, 1)
+    assert.equal(errors[0].param, 'a.1')
+  })
+
+  it('should validate simple objects', () => {
+    let data = 'something expected'
+    let rules = 'string'
+
+    let errors = validator.validate(rules, data)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
   })
 
   it.skip('should validate a complex object', () => {
@@ -223,10 +268,7 @@ describe('Validator#validate', () => {
       stats: rulesStats,
     }
 
-    let errors = Validator.validate(rules, data)
-
-    console.log(errors)
-
+    let errors = validator.validate(rules, data)
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
   })

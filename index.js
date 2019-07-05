@@ -9,14 +9,19 @@ class Validator
    * @param rule string
    * @param value mixed
    */
-  static _validateField(rule, value, parameterName) {
-    const errors = []
+  _validateField(rule, value, parameterName) {
+    // console.log('_validateField')
+    // console.log(rule, 'rule')
+    // console.log(value, 'value')
 
-    let isRequired = true
+    let errors = []
+
+    if (rule === '*') {
+      return errors
+    }
+
     if (typeof value === 'undefined') {
-      if (isRequired) {
-        errors.push(new ValidationException(parameterName, `Validation Error: parameter '${parameterName}' is a required field`))
-      }
+      errors.push(new ValidationException(parameterName, `Validation Error: parameter '${parameterName}' is a required field`))
     } else {
       if (typeof value !== rule) {
         errors.push(new ValidationException(
@@ -28,84 +33,100 @@ class Validator
 
     return errors
   }
-
-  /**
-   * Returns an object with errors or null if nothing fails.
-   */
-  static validate (rules, original, fieldPreffix) {
+  _validateArray(rules, value, fieldPreffix) {
+    // console.log('_validateArray')
+    // console.log(rules, 'rules')
+    // console.log(value, 'value')
 
     if (! fieldPreffix) {
       fieldPreffix = ''
     }
-
     if (fieldPreffix !== '') {
       fieldPreffix += '.'
     }
 
-    if (rules === undefined) {
-      throw new Error(`Parameter rules cannot be undefined`)
+    let errors = []
+
+    if (rules.length !== 1) {
+      throw new Error(`Invalid rule ${JSON.stringify(rules)} in ${fieldPreffix}`)
     }
 
-    const copy = Object.assign({}, original)
-
-    const errors = []
-
-    for (let i in rules) {
-      // special field
-      if (i === '*') {
-        continue
-      }
-
-      let rule = rules[i]
-      let value = copy[i]
-
-      let type = typeof rule
-
-      let fieldErrors = []
-
-      switch (type) {
-      case 'string':
-        fieldErrors = this._validateField(rule, value, fieldPreffix + i)
-        break;
-      case 'object':
-        fieldErrors = this.validate(rule, value, fieldPreffix + i)
-        break;
-      default:
-        throw new NotImplementedException()
-        break;
-      }
-
-      for (let j in fieldErrors) {
-        errors.push(fieldErrors[j])
-      }
-
-      delete copy[i]
+    for (let j in value) {
+      errors = errors.concat(this._validateField(rules[0], value[j], fieldPreffix + j))
     }
 
-    if (! rules) {
-      let missingField = Object.keys(copy)[0]
-      errors.push(new ValidationException(
-        fieldPreffix + missingField,
-        `Validation Error: parameter '${fieldPreffix + missingField}' found but was not expected`
-      ))
+    return errors
+  }
+  _validateObject(rules, value, fieldPreffix) {
+    // console.log('_validateObject')
+    // console.log(rules, 'rules')
+    // console.log(value, 'value')
+
+    if (! fieldPreffix) {
+      fieldPreffix = ''
+    }
+    if (fieldPreffix !== '') {
+      fieldPreffix += '.'
+    }
+
+    let errors = []
+
+    const copy = Object.assign({}, value)
+
+    for (let j in rules) {
+      errors = errors.concat(this.validate(rules[j], copy[j], fieldPreffix + j))
+      delete copy[j]
     }
 
     if (rules && rules['*'] === undefined) {
       let missingField = Object.keys(copy)[0]
       if (missingField !== undefined) {
         errors.push(new ValidationException(
-          fieldPreffix + missingField,
-          `Validation Error: parameter '${fieldPreffix + missingField}' found but was not expected`
+            fieldPreffix + missingField,
+            `Validation Error: parameter '${fieldPreffix + missingField}' found but was not expected`
         ))
       }
     }
 
-    // console.groupEnd()
-
     return errors
   }
 
-  static sanitize (rules, data) {
+  /**
+   * Returns an object with errors or [] if nothing fails.
+   */
+  validate (rules, original, fieldPreffix) {
+
+    if (rules === undefined) {
+      throw new Error(`Parameter rules cannot be undefined`)
+    }
+
+    let errors = []
+
+    // special field
+    if (rules !== '*') {
+
+      let type = typeof rules
+
+      switch (type) {
+      case 'string':
+        errors = errors.concat(this._validateField(rules, original, fieldPreffix))
+        break;
+      case 'object': // and array
+        if (Array.isArray(rules)) {
+          errors = errors.concat(this._validateArray(rules, original, fieldPreffix))
+        } else {
+          errors = errors.concat(this._validateObject(rules, original, fieldPreffix))
+        }
+        break;
+      default:
+        throw new NotImplementedException()
+        break;
+      }
+    }
+
+    return errors
+  }
+  sanitize (rules, data) {
     throw new NotImplementedException()
   }
 }
