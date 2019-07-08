@@ -18,7 +18,7 @@ class Validator
 
     }
     this.sanitizers = {
-      trim: x => x.trim(),
+      trim: x => x ? x.trim() : '',
       emptyString: x => x ? x : '',
       firstCapitalCase: x => x.length ? x.charAt(0).toUpperCase() + x.slice(1) : x,
       universalPhone: x => {
@@ -202,6 +202,9 @@ class Validator
       case 'array':
         errors = errors.concat(this._validateArray(rules, original, fieldPreffix))
         break;
+      case 'function':
+        errors = errors.concat(rules(original, fieldPreffix))
+        break;
       default:
         throw new InvalidRulesException(`Unknown type of rule: ${type}`)
       }
@@ -227,32 +230,36 @@ class Validator
     return value
   }
 
-  _sanitizeField(rule, value) {
+  _sanitizeField(rule, value, original) {
     let rules = this._parseRules(rule)
     return this.sanitizeSimple(rules, value)
   }
-  _sanitizeArray(rules, value) {
+  _sanitizeArray(rules, value, original) {
 
     if (rules.length !== 1) {
       throw new InvalidRulesException(`Invalid rule ${JSON.stringify(rules)}`)
     }
 
     for (let j in value) {
-      value[j] = this.sanitize(rules[0], value[j])
+      value[j] = this.sanitize(rules[0], value[j], original)
     }
 
     return value
   }
-  _sanitizeObject(rules, value) {
+  _sanitizeObject(rules, value, original) {
 
     for (let j in rules) {
-      value[j] = this.sanitize(rules[j], value[j])
+      value[j] = this.sanitize(rules[j], value[j], original)
     }
 
     return value
   }
 
-  sanitize (rules, data) {
+  sanitize (rules, data, original) {
+    if (! original) {
+      original = data
+    }
+
     if (rules === undefined) {
       throw new InvalidRulesException(`Parameter rules cannot be undefined`)
     }
@@ -261,13 +268,16 @@ class Validator
 
     switch (type) {
     case 'string':
-      data = this._sanitizeField(rules, data)
+      data = this._sanitizeField(rules, data, original)
       break;
     case 'object':
-      data = this._sanitizeObject(rules, data)
+      data = this._sanitizeObject(rules, data, original)
       break;
     case 'array':
-      data = this._sanitizeArray(rules, data)
+      data = this._sanitizeArray(rules, data, original)
+      break;
+    case 'function':
+      data = rules(data, original)
       break;
     default:
       throw new InvalidRulesException(`Unknown type of rule: ${type}`)
