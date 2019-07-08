@@ -15,6 +15,19 @@ class Validator
 
   clear () {
     this.types = {
+
+    }
+    this.sanitizers = {
+      trim: x => x.trim(),
+      emptyString: x => x ? x : '',
+      firstCapitalCase: x => x.length ? x.charAt(0).toUpperCase() + x.slice(1) : x,
+      universalPhone: x => {
+        x = x.replace(/-/g, '').replace(/ /g, '')
+        if (x[0] !== '+') {
+          x = '+34' + x
+        }
+        return x
+      },
     }
   }
 
@@ -40,7 +53,7 @@ class Validator
     return rules
   }
 
-  checkSimple (rules, value, parameterName) {
+  validateSimple (rules, value, parameterName) {
     let errors = []
 
     /*
@@ -52,12 +65,13 @@ class Validator
 
     let type = this._getTypeFor(value)
 
+    // validation of types need to be done here since _getTypeFor needs to be
+    // used for determining type of rules
     for (let i in this.types) {
       if (this.types[i](value)) {
         type = i
       }
     }
-
 
     if (! rules.types.includes(type)) {
       if (! parameterName) {
@@ -89,7 +103,7 @@ class Validator
     if (this._getTypeFor(value) === 'undefined') {
       errors.push(new ValidationException(parameterName, `Validation Error: parameter '${parameterName}' is a required field`))
     } else {
-      errors = errors.concat(this.checkSimple(rules, value, parameterName))
+      errors = errors.concat(this.validateSimple(rules, value, parameterName))
     }
 
     return errors
@@ -195,8 +209,71 @@ class Validator
 
     return errors
   }
+
+  addSanitizer (name, callback) {
+    this.sanitizers[name] = callback
+  }
+
+  sanitizeSimple(rules, value) {
+    for (let i in rules.types) {
+      let sanitizer = rules.types[i]
+      if (! this.sanitizers[sanitizer]) {
+        throw new InvalidRulesException(`Invalid sanitizer: ${sanitizer}`)
+      }
+
+      value = this.sanitizers[sanitizer](value)
+    }
+
+    return value
+  }
+
+  _sanitizeField(rule, value) {
+    let rules = this._parseRules(rule)
+    return this.sanitizeSimple(rules, value)
+  }
+  _sanitizeArray(rules, value) {
+
+    if (rules.length !== 1) {
+      throw new InvalidRulesException(`Invalid rule ${JSON.stringify(rules)}`)
+    }
+
+    for (let j in value) {
+      value[j] = this.sanitize(rules[0], value[j])
+    }
+
+    return value
+  }
+  _sanitizeObject(rules, value) {
+
+    for (let j in rules) {
+      value[j] = this.sanitize(rules[j], value[j])
+    }
+
+    return value
+  }
+
   sanitize (rules, data) {
-    throw new NotImplementedException()
+    if (rules === undefined) {
+      throw new InvalidRulesException(`Parameter rules cannot be undefined`)
+    }
+
+    let type = this._getTypeFor(rules)
+
+    switch (type) {
+    case 'string':
+      data = this._sanitizeField(rules, data)
+      break;
+    case 'object':
+      data = this._sanitizeObject(rules, data)
+      break;
+    case 'array':
+      data = this._sanitizeArray(rules, data)
+      break;
+    default:
+      throw new InvalidRulesException(`Unknown type of rule: ${type}`)
+    }
+
+    return data
   }
 }
 

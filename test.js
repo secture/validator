@@ -511,6 +511,50 @@ describe('Validator#validate', () => {
 })
 
 describe('Validator#sanitize', () => {
+
+  it('should sanitize a complex object', () => {
+
+    validator.addType(
+      'datetime',
+      (a) => /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(a)
+    )
+
+    validator.addType(
+      'id',
+      (a) => /^[0-9a-f]{24}$/.test(a)
+    )
+
+    let data = {
+      "name": "registered-contact",
+      "data": {
+        "contactId": "000000000011111111112222",
+        "name": "Pablo   ",
+        "surname": "lópez ",
+        "phone": "637 41-20-12",
+        "isDependant": false,
+        "registeredAt": "2019-09-18 12:30:00",
+      }
+    }
+
+    let sanitization = {
+      name: "emptyString",
+      data: {
+        name: "trim|firstCapitalCase",
+        surname: "trim|firstCapitalCase",
+        phone: "universalPhone",
+        location: "emptyString",
+      },
+    }
+
+    let sanitized = validator.sanitize(sanitization, data)
+    assert.equal(sanitized.data.name, "Pablo")
+    assert.equal(sanitized.data.surname, "López")
+    assert.equal(sanitized.data.phone, "+34637412012")
+    assert.equal(sanitized.data.location, "")
+  })
+
+
+  /*
   it('should throw (temporarily) a not implemented exception for now', () => {
     try {
       validator.sanitize('string', 'mystring')
@@ -524,6 +568,7 @@ describe('Validator#sanitize', () => {
       assert.equal(e.message, 'Not implemented yet!')
     }
   })
+  */
 })
 
 
