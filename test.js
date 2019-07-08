@@ -356,8 +356,23 @@ describe('Validator#validate', () => {
     assert.equal(errors[0].message, "Validation Error: the default parameter is waiting for a 'null' argument but received a 'number'")
   })
 
-  it('should throw a schema exception if rules contains anything not understandable', () => {
+  it('should validate double types', () => {
+    let data = 35
+    let rules = 'string|number|null'
 
+    let errors = validator.validate(rules, data)
+    assert.equal(errors.length, 0)
+
+    data = '35'
+    errors = validator.validate(rules, data)
+    assert.equal(errors.length, 0)
+
+    data = null
+    errors = validator.validate(rules, data)
+    assert.equal(errors.length, 0)
+  })
+
+  it('should throw a schema exception if rules contains anything not understandable', () => {
     try {
       validator.validate(null, 'mystring')
       assert.fail()
@@ -433,7 +448,17 @@ describe('Validator#validate', () => {
     assert.equal(errors.length, 0)
   })
 
-  it.skip('should validate a complex object', () => {
+  it('should validate a complex object', () => {
+
+    validator.addType(
+      'datetime',
+      (a) => /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(a)
+    )
+
+    validator.addType(
+      'id',
+      (a) => /^[0-9a-f]{24}$/.test(a)
+    )
 
     let data = {
       "name": "registered-contact",
@@ -457,20 +482,20 @@ describe('Validator#validate', () => {
     let rulesName = "string"
 
     let rulesData = {
-      contactId: "string",
+      contactId: "id",
       name: "string",
       surname: "string",
       phone: "string",
       location: "string",
       isDependant: "boolean",
-      registeredAt: "date",
+      registeredAt: "datetime",
     }
 
     let rulesStats = {
-      createdAt: "date",
-      startedAt: "date|null",
-      endedAt: "date|null",
-      assigneeId: "string",
+      createdAt: "datetime",
+      startedAt: "datetime|null",
+      endedAt: "datetime|null",
+      assigneeId: "id",
     }
 
     let rules = {

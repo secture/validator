@@ -4,6 +4,78 @@ const { NotImplementedException, InvalidRulesException, ValidationException } = 
 
 class Validator
 {
+
+  constructor () {
+    this.clear()
+  }
+
+  addType (type, callback) {
+    this.types[type] = callback
+  }
+
+  clear () {
+    this.types = {
+    }
+  }
+
+
+  _parseRules (rule) {
+    let rules = {
+      command: rule,
+      types: [],
+      constraints: [],
+    }
+
+    let chunks = rule.split('|')
+    for (let i in chunks) {
+      let [ key, value ] = chunks[i].split(':')
+
+      if (! value) {
+        rules.types.push(key)
+      } else {
+        rules.constraints[key] = value
+      }
+    }
+
+    return rules
+  }
+
+  checkSimple (rules, value, parameterName) {
+    let errors = []
+
+    /*
+    console.log(rules, 'rules')
+    console.log(value, 'value')
+    console.log(this._getTypeFor(value), 'type')
+    console.log(rules.includes(this._getTypeFor(value)), 'includes')
+    */
+
+    let type = this._getTypeFor(value)
+
+    for (let i in this.types) {
+      if (this.types[i](value)) {
+        type = i
+      }
+    }
+
+
+    if (! rules.types.includes(type)) {
+      if (! parameterName) {
+        errors.push(new ValidationException(
+            '',
+            `Validation Error: the default parameter is waiting for a '${rules.command}' argument but received a '${type}'`
+        ))
+      } else {
+        errors.push(new ValidationException(
+            parameterName,
+            `Validation Error: parameter '${parameterName}' is waiting for a '${rules.command}' argument but received a '${type}'`
+        ))
+      }
+    }
+
+    return errors
+  }
+
   /**
    *
    * @param rule string
@@ -12,22 +84,12 @@ class Validator
   _validateField(rule, value, parameterName) {
     let errors = []
 
+    let rules = this._parseRules(rule)
+
     if (this._getTypeFor(value) === 'undefined') {
       errors.push(new ValidationException(parameterName, `Validation Error: parameter '${parameterName}' is a required field`))
     } else {
-      if (this._getTypeFor(value) !== rule) {
-        if (! parameterName) {
-          errors.push(new ValidationException(
-            '',
-            `Validation Error: the default parameter is waiting for a '${rule}' argument but received a '${this._getTypeFor(value)}'`
-          ))
-        } else {
-          errors.push(new ValidationException(
-            parameterName,
-            `Validation Error: parameter '${parameterName}' is waiting for a '${rule}' argument but received a '${this._getTypeFor(value)}'`
-          ))
-        }
-      }
+      errors = errors.concat(this.checkSimple(rules, value, parameterName))
     }
 
     return errors
