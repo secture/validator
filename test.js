@@ -514,16 +514,6 @@ describe('Validator#sanitize', () => {
 
   it('should sanitize a complex object', () => {
 
-    validator.addType(
-      'datetime',
-      (a) => /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(a)
-    )
-
-    validator.addType(
-      'id',
-      (a) => /^[0-9a-f]{24}$/.test(a)
-    )
-
     let data = {
       "name": "registered-contact",
       "data": {
@@ -553,22 +543,75 @@ describe('Validator#sanitize', () => {
     assert.equal(sanitized.data.location, "")
   })
 
-
-  /*
-  it('should throw (temporarily) a not implemented exception for now', () => {
-    try {
-      validator.sanitize('string', 'mystring')
-      assert.fail()
-    }
-    catch (e) {
-      if (e.name !== 'Error') {
-        throw e
+  it('should allow a function for sanitization', () => {
+    let data = {
+      "name": "registered-contact",
+      "data": {
+        "name": "Pablo   ",
       }
-      assert.equal(e.name, 'Error')
-      assert.equal(e.message, 'Not implemented yet!')
     }
+
+    let sanitization = {
+      data: {
+        name: x => x.trim()
+      },
+    }
+
+    let sanitized = validator.sanitize(sanitization, data)
+    assert.equal(sanitized.data.name, "Pablo")
   })
-  */
+
+  it('should remove all keys with an undefined value', () => {
+    let data = {
+      "name": "registered-contact",
+      "data": {
+        "contact_id": "000000000011111111112222",
+      }
+    }
+
+    let sanitization = {
+      name: "emptyString",
+      data: {
+        contactId: (x, o) => {
+          return x ? x : o.data.contact_id
+        },
+        contact_id: (x, o) => {
+          return undefined
+        },
+      },
+    }
+
+    let sanitized = validator.sanitize(sanitization, data)
+    assert.equal(sanitized.data.contactId, '000000000011111111112222')
+    assert.equal(sanitized.data.contact_id, undefined)
+    assert.equal('contact_id' in sanitized.data, false)
+  })
+
+  it('should not change the original record', () => {
+    let data = {
+      "name": "registered-contact",
+      "data": {
+        "contact_id": "000000000011111111112222",
+      }
+    }
+
+    let sanitization = {
+      name: "emptyString",
+      data: {
+        contact_id: (x, o) => {
+          return undefined
+        },
+        contactId: (x, o) => {
+          return x ? x : o.data.contact_id
+        },
+      },
+    }
+
+    let sanitized = validator.sanitize(sanitization, data)
+    assert.equal(sanitized.data.contactId, '000000000011111111112222')
+    assert.equal(sanitized.data.contact_id, undefined)
+    assert.equal('contact_id' in sanitized.data, false)
+  })
 })
 
 

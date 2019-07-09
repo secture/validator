@@ -250,14 +250,17 @@ class Validator
 
     for (let j in rules) {
       value[j] = this.sanitize(rules[j], value[j], original)
+      if (value[j] === undefined) {
+        delete value[j]
+      }
     }
 
     return value
   }
 
   sanitize (rules, data, original) {
-    if (! original) {
-      original = data
+    if (original === undefined) {
+      original = JSON.parse(JSON.stringify(data))
     }
 
     if (rules === undefined) {
