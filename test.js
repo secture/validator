@@ -30,7 +30,7 @@ describe('Validator#validate', () => {
     let errors = validator.validate(rules, data)
     assert.equal(errors.length, 1)
     assert.equal(errors[0].param, 'name')
-    assert.equal(errors[0].message, "Validation Error: parameter 'name' is waiting for a 'string' argument but received a 'number'")
+    assert.equal(errors[0].message, "Validation Error: parameter 'name' is waiting for a 'string' argument but received a 'number': 35")
   })
 
   it('should append all errors in the same structure', () => {
@@ -69,7 +69,6 @@ describe('Validator#validate', () => {
     assert.equal(errors[0].param, 'a')
     assert.equal(errors[1].param, 'c')
   })
-
 
   it('should validate on simple structure with unknown fields', () => {
     let data = {
@@ -265,7 +264,7 @@ describe('Validator#validate', () => {
     let errors = validator.validate(rules, data)
     assert.equal(Array.isArray(errors), true)
     let expectedMessages = [
-      "Validation Error: the default parameter is waiting for a 'string' argument but received a 'array'",
+      "Validation Error: the default parameter is waiting for a 'string' argument but received a 'array': []",
     ]
     assert.equal(errors.length, 1)
     assert.equal(errors[0].param, '') // default === ''
@@ -285,7 +284,7 @@ describe('Validator#validate', () => {
 
     let errors = validator.validate(rules, data)
     let expectedMessages = [
-      "Validation Error: parameter '1' is waiting for a 'string' argument but received a 'null'",
+      "Validation Error: parameter '1' is waiting for a 'string' argument but received a 'null': null",
     ]
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 1)
@@ -320,7 +319,6 @@ describe('Validator#validate', () => {
     assert.equal(errors.length, 0)
   })
 
-
   it('should fail if no params are sent to validator', () => {
     try {
       let errors = validator.validate()
@@ -335,7 +333,6 @@ describe('Validator#validate', () => {
       assert.equal(e.message, 'InvalidRulesException: Parameter rules cannot be undefined')
     }
   })
-
   it('should validate nulls', () => {
     let data = null
     let rules = 'null'
@@ -344,7 +341,6 @@ describe('Validator#validate', () => {
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
   })
-
   it('should validate nulls and fail', () => {
     let data = 35
     let rules = 'null'
@@ -353,9 +349,8 @@ describe('Validator#validate', () => {
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 1)
     assert.equal(errors[0].param, '') // default
-    assert.equal(errors[0].message, "Validation Error: the default parameter is waiting for a 'null' argument but received a 'number'")
+    assert.equal(errors[0].message, "Validation Error: the default parameter is waiting for a 'null' argument but received a 'number': 35")
   })
-
   it('should validate double types', () => {
     let data = 35
     let rules = 'string|number|null'
@@ -371,7 +366,6 @@ describe('Validator#validate', () => {
     errors = validator.validate(rules, data)
     assert.equal(errors.length, 0)
   })
-
   it('should throw a schema exception if rules contains anything not understandable', () => {
     try {
       validator.validate(null, 'mystring')
@@ -383,7 +377,6 @@ describe('Validator#validate', () => {
       assert.equal(e.message, 'InvalidRulesException: Unknown type of rule: null')
     }
   })
-
   it('should validate a complex object with no types', () => {
 
     let data = {
@@ -447,7 +440,6 @@ describe('Validator#validate', () => {
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
   })
-
   it('should validate a complex object', () => {
 
     validator.addType(
@@ -531,7 +523,7 @@ describe('Validator#sanitize', () => {
       data: {
         name: "trim|firstCapitalCase",
         surname: "trim|firstCapitalCase",
-        phone: "universalPhone",
+        phone: "onlyNumbers",
         location: "emptyString",
       },
     }
@@ -539,8 +531,29 @@ describe('Validator#sanitize', () => {
     let sanitized = validator.sanitize(sanitization, data)
     assert.equal(sanitized.data.name, "Pablo")
     assert.equal(sanitized.data.surname, "López")
-    assert.equal(sanitized.data.phone, "+34637412012")
+    assert.equal(sanitized.data.phone, "637412012")
     assert.equal(sanitized.data.location, "")
+  })
+
+  it.skip('should not modify the provided object', () => {
+
+    let data = {
+      "name": "registered-contact",
+      "data": {
+        "name": "Pablo   ",
+      }
+    }
+
+    let sanitization = {
+      data: {
+        name: x => x.trim()
+      },
+    }
+
+    let sanitized = validator.sanitize(sanitization, data)
+    assert.equal(sanitized.data.name, "Pablo")
+    assert.equal(data.data.name, "Pablo   ")
+
   })
 
   it('should allow a function for sanitization', () => {

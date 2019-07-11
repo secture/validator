@@ -20,14 +20,12 @@ class Validator
     this.sanitizers = {
       trim: x => x ? x.trim() : '',
       emptyString: x => x ? x : '',
+      emptyArray: x => x ? x : [],
+      emptyObject: x => x ? x : {},
+
+      onlyNumbers: x => x.replace(/[^0-9]/g, ''),
+
       firstCapitalCase: x => x.length ? x.charAt(0).toUpperCase() + x.slice(1) : x,
-      universalPhone: x => {
-        x = x.replace(/-/g, '').replace(/ /g, '')
-        if (x[0] !== '+') {
-          x = '+34' + x
-        }
-        return x
-      },
     }
   }
 
@@ -77,12 +75,12 @@ class Validator
       if (! parameterName) {
         errors.push(new ValidationException(
             '',
-            `Validation Error: the default parameter is waiting for a '${rules.command}' argument but received a '${type}'`
+            `Validation Error: the default parameter is waiting for a '${rules.command}' argument but received a '${type}': ${JSON.stringify(value)}`
         ))
       } else {
         errors.push(new ValidationException(
             parameterName,
-            `Validation Error: parameter '${parameterName}' is waiting for a '${rules.command}' argument but received a '${type}'`
+            `Validation Error: parameter '${parameterName}' is waiting for a '${rules.command}' argument but received a '${type}': ${JSON.stringify(value)}`
         ))
       }
     }
