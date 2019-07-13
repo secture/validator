@@ -53,14 +53,6 @@ class Validator
 
   validateSimple (rules, value, parameterName) {
     let errors = []
-
-    /*
-    console.log(rules, 'rules')
-    console.log(value, 'value')
-    console.log(this._getTypeFor(value), 'type')
-    console.log(rules.includes(this._getTypeFor(value)), 'includes')
-    */
-
     let type = this._getTypeFor(value)
 
     // validation of types need to be done here since _getTypeFor needs to be
@@ -234,26 +226,40 @@ class Validator
   }
   _sanitizeArray(rules, value, original) {
 
+    const copy = []
+
     if (rules.length !== 1) {
       throw new InvalidRulesException(`Invalid rule ${JSON.stringify(rules)}`)
     }
 
     for (let j in value) {
-      value[j] = this.sanitize(rules[0], value[j], original)
+      copy.push(this.sanitize(rules[0], value[j], original))
     }
 
-    return value
+    return copy
   }
   _sanitizeObject(rules, value, original) {
 
-    for (let j in rules) {
-      value[j] = this.sanitize(rules[j], value[j], original)
-      if (value[j] === undefined) {
-        delete value[j]
+    let copy = {}
+
+    const unique = (value, index, self) => self.indexOf(value) === index
+
+
+    let keys = Object.keys(rules).concat(Object.keys(value)).filter(unique)
+
+    for (const j in keys) {
+      const key = keys[j]
+
+      copy[key] = value[key]
+      if (rules.hasOwnProperty(key)) {
+        copy[key] = this.sanitize(rules[key], copy[key], original)
+        if (copy[key] === undefined) {
+          delete copy[key]
+        }
       }
     }
 
-    return value
+    return copy
   }
 
   sanitize (rules, data, original) {

@@ -529,13 +529,14 @@ describe('Validator#sanitize', () => {
     }
 
     let sanitized = validator.sanitize(sanitization, data)
+
     assert.equal(sanitized.data.name, "Pablo")
     assert.equal(sanitized.data.surname, "López")
     assert.equal(sanitized.data.phone, "637412012")
     assert.equal(sanitized.data.location, "")
   })
 
-  it.skip('should not modify the provided object', () => {
+  it('should not modify the provided object', () => {
 
     let data = {
       "name": "registered-contact",
@@ -553,6 +554,51 @@ describe('Validator#sanitize', () => {
     let sanitized = validator.sanitize(sanitization, data)
     assert.equal(sanitized.data.name, "Pablo")
     assert.equal(data.data.name, "Pablo   ")
+  })
+
+  it('should make sure that array is still an array', () => {
+
+    let data = [
+      "Pablo   ",
+      "  LOPEZ ",
+      " Torres ",
+    ]
+
+    let sanitization = [
+      x => x.trim()
+    ]
+
+    let sanitized = validator.sanitize(sanitization, data)
+
+    assert.equal(Array.isArray(data), true)
+    assert.equal(Array.isArray(sanitized), true)
+  })
+
+  it('should not modify the provided array', () => {
+
+    let data = [
+      "Pablo   ",
+      "  LOPEZ ",
+      " Torres ",
+    ]
+
+    let sanitization = [
+      x => x.trim()
+    ]
+
+    let sanitized = validator.sanitize(sanitization, data)
+
+    assert.equal(sanitized[0], "Pablo")
+    assert.equal(sanitized[1], "LOPEZ")
+    assert.equal(sanitized[2], "Torres")
+
+    assert.equal(Array.isArray(sanitized), true)
+
+    assert.equal(data[0], "Pablo   ")
+    assert.equal(data[1], "  LOPEZ ")
+    assert.equal(data[2], " Torres ")
+
+    assert.equal(Array.isArray(data), true)
 
   })
 
