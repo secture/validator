@@ -20,6 +20,9 @@ class Validator
     this.types = {
     }
     this.sanitizers = {
+
+      delete: x => undefined,
+
       trim: x => x ? x.trim() : '',
       emptyString: x => x ? x : '',
       emptyArray: x => x ? x : [],
