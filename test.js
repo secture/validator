@@ -351,6 +351,62 @@ describe('Validator#validate', () => {
     assert.equal(errors[0].param, '') // default
     assert.equal(errors[0].message, "Validation Error: the default parameter is waiting for a 'null' argument but received a 'number': 35")
   })
+
+
+  it('should validate undefined values', () => {
+
+    validator.addType('id', (a) => /^[0-9a-f]{24}$/.test(a))
+
+    let data = {
+    }
+    let rules = {
+      'user_id': 'id|undefined',
+    }
+
+    let errors = validator.validate(rules, data)
+
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+
+    validator.removeType('id')
+  })
+  it('should validate undefined values with the ? syntax (provided)', () => {
+
+    validator.addType('id', (a) => /^[0-9a-f]{24}$/.test(a))
+
+    let data = {
+      'user_id': '000000000000000000000000',
+    }
+    let rules = {
+      'user_id': 'id?',
+    }
+
+    let errors = validator.validate(rules, data)
+
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+
+    validator.removeType('id')
+  })
+  it('should validate undefined values with the ? syntax (undefined)', () => {
+
+    validator.addType('id', (a) => /^[0-9a-f]{24}$/.test(a))
+
+    let data = {
+    }
+    let rules = {
+      'user_id': 'id?',
+    }
+
+    let errors = validator.validate(rules, data)
+
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+
+    validator.removeType('id')
+  })
+
+
   it('should validate double types', () => {
     let data = 35
     let rules = 'string|number|null'
@@ -378,6 +434,8 @@ describe('Validator#validate', () => {
     }
   })
   it('should validate a complex object with no types', () => {
+
+    validator.clear()
 
     let data = {
       'name': 'registered-contact',

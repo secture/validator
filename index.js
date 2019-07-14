@@ -12,10 +12,12 @@ class Validator
   addType (type, callback) {
     this.types[type] = callback
   }
+  removeType (type) {
+    delete this.types[type]
+  }
 
   clear () {
     this.types = {
-
     }
     this.sanitizers = {
       trim: x => x ? x.trim() : '',
@@ -25,13 +27,19 @@ class Validator
 
       onlyNumbers: x => x.replace(/[^0-9]/g, ''),
 
-      firstCapitalCase: x => x.length ? x.charAt(0).toUpperCase() + x.slice(1) : x,
+      toInt: x => x ? parseInt(x) : null,
+      toFloat: x => x ? parseFloat(x) : null,
+      toString: x => x ? '' + x : null,
+
+      firstCapitalCase: x => x.length ? x.charAt(0).toUpperCase() + x.slice(1) : null,
+      lowerCase: x => x.length ? x.toLowerCase() : null,
+      upperCase: x => x.length ? x.toUpperCase() : null,
     }
   }
 
-
   _parseRules (rule) {
     let rules = {
+      required: true,
       command: rule,
       types: [],
       constraints: [],
@@ -42,7 +50,17 @@ class Validator
       let [ key, value ] = chunks[i].split(':')
 
       if (! value) {
-        rules.types.push(key)
+
+        if (key.substr(-1) === '?') {
+          key = key.substr(0, key.length - 1)
+          rules.required = false
+        }
+
+        if (key === 'undefined') {
+          rules.required = false
+        } else {
+          rules.types.push(key)
+        }
       } else {
         rules.constraints[key] = value
       }
@@ -91,7 +109,9 @@ class Validator
     let rules = this._parseRules(rule)
 
     if (this._getTypeFor(value) === 'undefined') {
-      errors.push(new ValidationException(parameterName, `Validation Error: parameter '${parameterName}' is a required field`))
+      if (rules.required) {
+        errors.push(new ValidationException(parameterName, `Validation Error: parameter '${parameterName}' is a required field`))
+      }
     } else {
       errors = errors.concat(this.validateSimple(rules, value, parameterName))
     }
