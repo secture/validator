@@ -30,8 +30,26 @@ class Validator
 
       onlyNumbers: x => x.replace(/[^0-9]/g, ''),
 
-      toInt: x => x ? parseInt(x) : null,
-      toFloat: x => x ? parseFloat(x) : null,
+      toInt: x => {
+        if (isNaN(x)) {
+          return null
+        }
+        let number = parseInt(x)
+        if (isNaN(number)) {
+          return null
+        }
+        return number
+      },
+      toFloat: x => {
+        if (isNaN(x)) {
+          return null
+        }
+        let number = parseFloat(x)
+        if (isNaN(number)) {
+          return null
+        }
+        return number
+      },
       toString: x => x ? '' + x : null,
 
       firstCapitalCase: x => x.length ? x.charAt(0).toUpperCase() + x.slice(1) : null,

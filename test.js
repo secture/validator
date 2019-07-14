@@ -731,5 +731,54 @@ describe('Validator#sanitize', () => {
   })
 })
 
+describe('Validator#sanitize toFloat', () => {
+  it('should sanitize string to float', () => {
+    let data = '35'
+    let sanitization = 'toFloat'
+    let sanitized = validator.sanitize(sanitization, data)
+    assert.equal(sanitized, 35)
+  })
+
+  it('should not sanitize 0', () => {
+    let data = 0
+    let sanitization = 'toFloat'
+    let sanitized = validator.sanitize(sanitization, data)
+    assert.equal(sanitized, 0)
+  })
+
+  it('should sanitize string 0 to float', () => {
+    let data = '0'
+    let sanitization = 'toFloat'
+    let sanitized = validator.sanitize(sanitization, data)
+    assert.equal(sanitized, 0)
+  })
+
+  it('should sanitize decimal to float', () => {
+    let data = '0.5'
+    let sanitization = 'toFloat'
+    let sanitized = validator.sanitize(sanitization, data)
+    assert.equal(sanitized, 0.5)
+  })
+
+  it('should return null if error', () => {
+    let data = 'hey mi amigo'
+    let sanitization = 'toFloat'
+    let sanitized = validator.sanitize(sanitization, data)
+    assert.equal(sanitized, null)
+  })
+  it('should return null if null', () => {
+    let data = null
+    let sanitization = 'toFloat'
+    let sanitized = validator.sanitize(sanitization, data)
+    assert.equal(sanitized, null)
+  })
+  it('should return null if object', () => {
+    let data = []
+    let sanitization = 'toFloat'
+    let sanitized = validator.sanitize(sanitization, data)
+    assert.equal(sanitized, null)
+  })
+})
+
 
 
