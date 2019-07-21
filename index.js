@@ -333,6 +333,13 @@ class Validator
 
     return data
   }
+
+  assert (rules, data) {
+    let errors = this.validate(rules, data)
+    if (errors.length) {
+      throw new Error(JSON.stringify(errors, null, 2))
+    }
+  }
 }
 
 module.exports = Validator

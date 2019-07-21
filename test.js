@@ -309,7 +309,6 @@ describe('Validator#validate', () => {
     }
   })
 
-
   it('should validate simple wildcard', () => {
     let data = 'something expected'
     let rules = '*'
@@ -351,7 +350,6 @@ describe('Validator#validate', () => {
     assert.equal(errors[0].param, '') // default
     assert.equal(errors[0].message, "Validation Error: the default parameter is waiting for a 'null' argument but received a 'number': 35")
   })
-
 
   it('should validate undefined values', () => {
 
@@ -405,7 +403,6 @@ describe('Validator#validate', () => {
 
     validator.removeType('id')
   })
-
 
   it('should validate double types', () => {
     let data = 35
@@ -557,6 +554,25 @@ describe('Validator#validate', () => {
     let errors = validator.validate(rules, data)
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
+  })
+})
+
+describe('Validator#assert', () => {
+  it('should not throw an error on assert ok', () => {
+    let data = 'something expected'
+    let rules = 'string'
+
+    validator.assert(rules, data)
+  })
+  it('should throw an error on assert failed', async (done) => {
+    let data = 35
+    let rules = 'string'
+
+    try {
+      validator.assert(rules, data)
+    } catch (e) {
+      done()
+    }
   })
 })
 
