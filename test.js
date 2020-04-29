@@ -555,6 +555,67 @@ describe('Validator#validate', () => {
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
   })
+
+
+  it('should validate functions inside an object', () => {
+
+    let data = {
+      "doSomething": () => {
+      }
+    }
+
+    let rulesName = "string"
+
+    let rules = {
+      doSomething: 'function'
+    }
+
+    let errors = validator.validate(rules, data)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+  })
+
+
+  it('should validate inline functions', () => {
+
+    let data = {
+      doSomething () {
+      }
+    }
+
+    let rulesName = "string"
+
+    let rules = {
+      doSomething: 'function'
+    }
+
+    let errors = validator.validate(rules, data)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+  })
+
+  it('should validate functions in a class', () => {
+
+    class MyClass {
+      doSomething () {
+
+      }
+    }
+
+    let myObject = new MyClass()
+
+    let rulesName = "string"
+
+    let rules = {
+      doSomething: 'function'
+    }
+
+    let errors = validator.validate(rules, myObject)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+  })
+
+
 })
 
 describe('Validator#assert', () => {

@@ -160,8 +160,8 @@ class Validator
 
     return errors
   }
-  _validateObject(rules, value, fieldPreffix) {
 
+  _validateObject(rules, value, fieldPreffix) {
     if (! fieldPreffix) {
       fieldPreffix = ''
     }
@@ -171,7 +171,10 @@ class Validator
 
     let errors = []
 
-    const copy = Object.assign({}, value)
+    let copy = Object.assign({}, value)
+    if (typeof value === 'object' && Object.getPrototypeOf(value) !== Object.prototype) {
+      copy = Object.create(value)
+    }
 
     for (let j in rules) {
       errors = errors.concat(this.validate(rules[j], copy[j], fieldPreffix + j))
@@ -211,7 +214,6 @@ class Validator
    * Returns an object with errors or [] if nothing fails.
    */
   validate (rules, original, fieldPreffix) {
-
     if (rules === undefined) {
       throw new InvalidRulesException(`Parameter rules cannot be undefined`)
     }
