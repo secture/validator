@@ -556,6 +556,73 @@ describe('Validator#validate', () => {
     assert.equal(errors.length, 0)
   })
 
+  describe.only('test wildcards', () => {
+
+    it('should validate that the wilcard with a type does work', () => {
+
+      let data = {
+        'a': 1234,
+        'b': 5678,
+      }
+
+      let rules = {
+        '*': 'number'
+      }
+
+      let errors = validator.validate(rules, data)
+      assert.equal(Array.isArray(errors), true)
+      assert.equal(errors.length, 0)
+    })
+
+    it('should validate that the wilcard with a wrong type does not work', () => {
+
+      let data = {
+        'a': 1234,
+        'b': 5678,
+      }
+
+      let rules = {
+        '*': 'string'
+      }
+
+      let errors = validator.validate(rules, data)
+      assert.equal(Array.isArray(errors), true)
+      assert.equal(errors.length, 2)
+    })
+
+
+    it('should validate that the wilcard with a type and no elements does work', () => {
+
+      let data = {
+      }
+
+      let rules = {
+        '*': 'string'
+      }
+
+      let errors = validator.validate(rules, data)
+      assert.equal(Array.isArray(errors), true)
+      assert.equal(errors.length, 0)
+    })
+
+    it('should validate that a object is present and cannot be a string', () => {
+
+      let data = {
+        'a': 'string'
+      }
+
+      let rules = {
+        a: {
+        }
+      }
+
+      let errors = validator.validate(rules, data)
+      assert.equal(Array.isArray(errors), true)
+      assert.equal(errors.length, 1)
+    })
+
+  })
+
 
   it('should validate functions inside an object', () => {
 

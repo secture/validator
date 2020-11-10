@@ -177,7 +177,13 @@ class Validator
     }
 
     for (let j in rules) {
-      errors = errors.concat(this.validate(rules[j], copy[j], fieldPreffix + j))
+      if (j === '*') {
+        for (let i in copy) {
+          errors = errors.concat(this.validate(rules[j], copy[i], fieldPreffix + i))
+        }
+      } else {
+        errors = errors.concat(this.validate(rules[j], copy[j], fieldPreffix + j))
+      }
       delete copy[j]
     }
 
