@@ -162,6 +162,7 @@ class Validator
   }
 
   _validateObject(rules, value, fieldPreffix) {
+
     if (! fieldPreffix) {
       fieldPreffix = ''
     }
@@ -174,6 +175,21 @@ class Validator
     let copy = Object.assign({}, value)
     if (typeof value === 'object' && Object.getPrototypeOf(value) !== Object.prototype) {
       copy = Object.create(value)
+    }
+
+    if (typeof value !== 'object') {
+      if (fieldPreffix) {
+        let field = fieldPreffix.substring(0, fieldPreffix.length - 1)
+        errors.push(new ValidationException(
+            field,
+            `Validation Error: parameter '${field}' should be an object`
+        ))
+      } else {
+        errors.push(new ValidationException(
+            '',
+            `Validation Error: the provided element should be an object`
+        ))
+      }
     }
 
     for (let j in rules) {

@@ -203,12 +203,14 @@ describe('Validator#validate', () => {
     // a.x.c is not defined
 
     let expectedMessages = [
+      "Validation Error: parameter 'a.x' should be an object",
       "Validation Error: parameter 'a.x.c' is a required field",
       "Validation Error: parameter 'a.b' found but was not expected",
     ]
-    assert.equal(errors.length, 2)
+    assert.equal(errors.length, 3)
     assert.equal(errors[0].message, expectedMessages[0])
     assert.equal(errors[1].message, expectedMessages[1])
+    assert.equal(errors[2].message, expectedMessages[2])
 
   })
 
@@ -556,7 +558,7 @@ describe('Validator#validate', () => {
     assert.equal(errors.length, 0)
   })
 
-  describe.only('test wildcards', () => {
+  describe('test wildcards', () => {
 
     it('should validate that the wilcard with a type does work', () => {
 
@@ -605,7 +607,7 @@ describe('Validator#validate', () => {
       assert.equal(errors.length, 0)
     })
 
-    it('should validate that a object is present and cannot be a string', () => {
+    it.skip('should validate that an object is present and cannot be a string', () => {
 
       let data = {
         'a': 'string'
@@ -615,6 +617,16 @@ describe('Validator#validate', () => {
         a: {
         }
       }
+
+      let errors = validator.validate(rules, data)
+      assert.equal(Array.isArray(errors), true)
+      assert.equal(errors.length, 1)
+    })
+
+    it('should validate that an object is present and cannot be undefined', () => {
+
+      let data = undefined
+      let rules = { }
 
       let errors = validator.validate(rules, data)
       assert.equal(Array.isArray(errors), true)
