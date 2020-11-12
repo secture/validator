@@ -695,6 +695,76 @@ describe('Validator#validate', () => {
   })
 
 
+  it.only('should accept a function as a validator and work', () => {
+
+    let myValue = '#3941'
+
+    let rules = (value) => {
+      let errors = []
+
+      if (! typeof value === 'string') {
+        errors.push(`Invalid type for value (should be a string) ${typeof value}`)
+      }
+
+      if (typeof value === 'string' && ! value.match(/^#[0-9]{4}$/)) {
+        errors.push(`The value should be in the format #0000`)
+      }
+
+      return errors
+    }
+
+    let errors = validator.validate(rules, myValue)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+  })
+
+  it.only('should accept a function as a validator and fail if not string', () => {
+
+    let myValue = { a: 'a' }
+
+    let rules = (value) => {
+      let errors = []
+
+      if (! typeof value === 'string') {
+        errors.push(`Invalid type for value (should be a string) ${typeof value}`)
+      }
+
+      if (typeof value === 'string' && ! value.match(/^#[0-9]{4}$/)) {
+        errors.push(`The value should be in the format #0000`)
+      }
+
+      return errors
+    }
+
+    let errors = validator.validate(rules, myValue)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 0)
+  })
+  it.only('should accept a function as a validator and fail if wrong format', () => {
+
+    let myValue = '#39d1'
+
+    let rules = (value) => {
+      let errors = []
+
+      if (! typeof value === 'string') {
+        errors.push(`Invalid type for value (should be a string) ${typeof value}`)
+        return errors
+      }
+
+      if (typeof value === 'string' && ! value.match(/^#[0-9]{4}$/)) {
+        errors.push(`The value should be in the format #0000`)
+      }
+
+      return errors
+    }
+
+    let errors = validator.validate(rules, myValue)
+    assert.equal(Array.isArray(errors), true)
+    assert.equal(errors.length, 1)
+    assert.equal(errors[0], 'The value should be in the format #0000')
+  })
+
 })
 
 describe('Validator#assert', () => {
@@ -894,28 +964,24 @@ describe('Validator#sanitize toFloat', () => {
     let sanitized = validator.sanitize(sanitization, data)
     assert.equal(sanitized, 35)
   })
-
   it('should not sanitize 0', () => {
     let data = 0
     let sanitization = 'toFloat'
     let sanitized = validator.sanitize(sanitization, data)
     assert.equal(sanitized, 0)
   })
-
   it('should sanitize string 0 to float', () => {
     let data = '0'
     let sanitization = 'toFloat'
     let sanitized = validator.sanitize(sanitization, data)
     assert.equal(sanitized, 0)
   })
-
   it('should sanitize decimal to float', () => {
     let data = '0.5'
     let sanitization = 'toFloat'
     let sanitized = validator.sanitize(sanitization, data)
     assert.equal(sanitized, 0.5)
   })
-
   it('should return null if error', () => {
     let data = 'hey mi amigo'
     let sanitization = 'toFloat'
