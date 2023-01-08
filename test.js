@@ -211,7 +211,6 @@ describe('Validator#validate', () => {
     assert.equal(errors[0].message, expectedMessages[0])
     assert.equal(errors[1].message, expectedMessages[1])
     assert.equal(errors[2].message, expectedMessages[2])
-
   })
 
   it('should validate also array types', () => {
@@ -695,7 +694,7 @@ describe('Validator#validate', () => {
   })
 
 
-  it.only('should accept a function as a validator and work', () => {
+  it('should accept a function as a validator and work', () => {
 
     let myValue = '#3941'
 
@@ -718,7 +717,7 @@ describe('Validator#validate', () => {
     assert.equal(errors.length, 0)
   })
 
-  it.only('should accept a function as a validator and fail if not string', () => {
+  it('should accept a function as a validator and fail if not string', () => {
 
     let myValue = { a: 'a' }
 
@@ -740,7 +739,7 @@ describe('Validator#validate', () => {
     assert.equal(Array.isArray(errors), true)
     assert.equal(errors.length, 0)
   })
-  it.only('should accept a function as a validator and fail if wrong format', () => {
+  it('should accept a function as a validator and fail if wrong format', () => {
 
     let myValue = '#39d1'
 
