@@ -1,6 +1,6 @@
 {
   "name": "@secture/validator",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "A schema validator for javascript types",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,9 +26,10 @@
     "@types/node": "^22.13.8",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",
+    "cross-spawn": "^7.0.6",
     "eslint": "^9.21.0",
-    "mocha": "^6.2.3",
-    "nyc": "^14.1.1",
+    "mocha": "^11.1.0",
+    "nyc": "^17.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   },
