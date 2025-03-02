@@ -1,17 +1,71 @@
 declare module '@secture/validator' {
+  export interface ValidationException {
+    param: string;
+    message: string;
+  }
+
+  export type ValidatorFunction = (value: any) => boolean;
+  export type SanitizerFunction = (value: any, original?: any) => any;
+  export type Rule = string | Record<string, any> | any[] | ((value: any, paramName?: string) => ValidationException[]);
+
   export default class Validator {
     constructor();
-    addType(type: string, callback: (value: any) => boolean): void;
+    
+    /**
+     * Adds a custom type validator
+     */
+    addType(type: string, callback: ValidatorFunction): void;
+    
+    /**
+     * Removes a type validator
+     */
     removeType(type: string): void;
+    
+    /**
+     * Clears all custom types and resets sanitizers
+     */
     clear(): void;
 
-    validate(rules: string | object | any[], data: any, fieldPrefix?: string): any[];
-    validateSimple(rules: { [key: string]: any }, value: any, parameterName?: string): any[];
-    assert(rules: string | object | any[], data: any): void;
+    /**
+     * Validates data against rules
+     * Returns an array of ValidationException or empty array if valid
+     */
+    validate(rules: Rule, data: any, fieldPrefix?: string): ValidationException[];
+    
+    /**
+     * Validates a value against a parsed rule
+     */
+    validateSimple(rules: { 
+      required: boolean;
+      command: string;
+      types: string[];
+      constraints: Record<string, string>;
+    }, value: any, parameterName?: string): ValidationException[];
+    
+    /**
+     * Validates data against rules and throws an error if invalid
+     */
+    assert(rules: Rule, data: any): void;
 
-    addSanitizer(name: string, callback: (value: any) => any): void;
-    sanitize(rules: string | object | any[], data: any, original?: any): any;
-    sanitizeSimple(rules: { [key: string]: any }, value: any): any;
+    /**
+     * Adds a custom sanitizer function
+     */
+    addSanitizer(name: string, callback: SanitizerFunction): void;
+    
+    /**
+     * Sanitizes data according to rules
+     */
+    sanitize(rules: Rule, data: any, original?: any): any;
+    
+    /**
+     * Sanitizes a value according to a parsed rule
+     */
+    sanitizeSimple(rules: { 
+      required: boolean;
+      command: string;
+      types: string[];
+      constraints: Record<string, string>;
+    }, value: any): any;
   }
 }
 
